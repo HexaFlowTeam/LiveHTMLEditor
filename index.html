@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HexaFlow Live HTML Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e; /* Default dark background */
+            color: #ffffff; /* White text */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+            position: relative; /* For the menu */
+        }
+
+        /* Top toolbar */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #2d2d2d; /* Dark background for the toolbar */
+            padding: 10px 20px;
+            border-bottom: 2px solid #444;
+            flex-shrink: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .toolbar .title {
+            font-size: 18px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        /* Magic wand container to align properly */
+        .magic-wand-container {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Style for the magic wand */
+        .magic-wand {
+            cursor: pointer;
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Large color menu */
+        .color-menu {
+            display: none; /* Hide the menu initially */
+            position: fixed; /* Fixed to cover half of the screen */
+            top: 0;
+            left: 0;
+            width: 50%; /* Menu width */
+            height: 100%; /* Full height */
+            background-color: rgba(45, 45, 45, 0.95); /* Menu background with opacity */
+            border-right: 2px solid #444;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 10; /* Ensure it shows above */
+            overflow-y: auto; /* Enable scrolling if needed */
+        }
+
+        /* Theme options */
+        .theme-category {
+            margin-top: 20px;
+        }
+
+        .theme-category h3 {
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .theme-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px; /* Space between options */
+        }
+
+        .theme-name {
+            margin-left: 10px; /* Space between color and name */
+            color: #ffffff; /* White text */
+        }
+
+        /* Main container for editor and preview */
+        .editor-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: 10px;
+            padding: 10px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto; /* Center the content */
+            box-sizing: border-box;
+        }
+
+        textarea {
+            width: 100%;
+            height: 40vh;
+            background-color: rgba(45, 45, 45, 0.8); /* Default dark semi-transparent background for the editor */
+            color: #c5c5c5; /* Editor text color */
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 10px;
+            resize: vertical; /* Allow vertical resize */
+            box-sizing: border-box;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: auto; /* Enable scroll */
+            white-space: pre; /* Preserve whitespace */
+        }
+
+        iframe {
+            width: 100%;
+            flex: 1;
+            background-color: #ffffff; /* Light background for the preview */
+            border: 1px solid #444;
+            border-radius: 5px;
+        }
+
+        /* Color palette */
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        /* Color palette hover */
+        .color-option:hover {
+            border: 2px solid #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top toolbar -->
+    <div class="toolbar">
+        <div class="title">HexaFlow</div>
+        <div class="magic-wand-container">
+            <img src="https://icons.veryicon.com/png/o/miscellaneous/cbxt/magic-wand-11.png" class="magic-wand" alt="Magic Wand" onclick="toggleColorMenu()">
+        </div>
+    </div>
+
+    <!-- Large color menu -->
+    <div class="color-menu" id="color-menu">
+        <h2 style="color: white;">UI THEMES</h2>
+
+        <div class="theme-option">
+            <input type="text" id="customThemeUrl" placeholder="Enter theme image URL" style="width: 70%; padding: 5px;">
+            <button onclick="setCustomTheme()">Apply</button>
+        </div>
+
+        <!-- Default Themes -->
+        <div class="theme-category">
+            <h3>Default Themes</h3>
+            <div class="theme-option" onclick="setColor('#1e1e1e', '#ffffff')">
+                <div class="color-option" style="background-color: #1e1e1e;"></div>
+                <div class="theme-name">Default Dark</div>
+            </div>
+            <div class="theme-option" onclick="setColor('#ffffff', '#000000', true)">
+                <div class="color-option" style="background-color: #ffffff;"></div>
+                <div class="theme-name">Default Light</div>
+            </div>
+        </div>
+
+        <!-- Red colors -->
+        <div class="theme-category">
+            <h3>Reds</h3>
+            <div class="theme-option" onclick="setColor('#ff4757', '#ffffff')">
+                <div class="color-option" style="background-color: #ff4757;"></div>
+                <div class="theme-name">Bright Red</div>
+            </div>
+            <div class="theme-option" onclick="setColor('#ff6348', '#ffffff')">
+                <div class="color-option" style="background-color: #ff6348;"></div>
+                <div class="theme-name">Tomato Red</div>
+            </div>
+            <div class="theme-option" onclick="setColor('#c0392b', '#ffffff')">
+                <div class="color-option" style="background-color: #c0392b;"></div>
+                <div class="theme-name">Crimson</div>
+            </div>
+        </div>
+
+        <!-- Yellow colors -->
+        <div class="theme-category">
+            <h3>Yellows</h3>
+            <div class="theme-option" onclick="setColor('#ffa502', '#fff')">
+                <div class="color-option" style="background-color: #ffa502;"></div>
+                <div class="theme-name">Bright Yellow</div>
+            </div>
+            <div class="theme-option" onclick="setColor('#ff8c00', '#fff')">
+                <div class="color-option" style="background-color: #ff8c00;"></div>
+                <div class="theme-name">Orange Yellow</div>
+            </div>
+            <div class="theme-option" onclick="setColor('#f1c40f', '#fff')">
+                <div class="color-option" style="background-color: #f1c40f;"></div>
+                <div class="theme-name">Sunflower Yellow</div>
+            </div>
+        </div>
+
+        <!-- Green colors -->
+        <div class="theme-category">
+            <h3>Greens</h3>
+            <div class="theme-option" onclick="setColor('#2ed573', '#fff')">
+                <div class="color-option" style="background-color: #2ed573;"></div>
+                <div class="theme-name">Light Green</div>
+            </div>
+            <div class="theme-option" onclick="setColor('#a5673f', '#ffffff')">
+                <div class="color-option" style="background-color: #a5673f;"></div>
+                <div class="theme-name">Brown</div>
+            </div>
+            <div class="theme-option" onclick="setColor('#27ae60', '#ffffff')">
+                <div class="color-option" style="background-color: #27ae60;"></div>
+                <div class="theme-name">Emerald</div>
+            </div>
+        </div>
+
+        <!-- Blue colors -->
+        <div class="theme-category">
+            <h3>Blues</h3>
+            <div class="theme-option" onclick="setColor('#1e90ff', '#fff')">
+                <div class="color-option" style="background-color: #1e90ff;"></div>
+                <div class="theme-name">Light Blue</div>
+            </div>
+            <div class="theme-option" onclick="setColor('#3742fa', '#ffffff')">
+                <div class="color-option" style="background-color: #3742fa;"></div>
+                <div class="theme-name">Royal Blue</div>
+            </div>
+            <div class="theme-option" onclick="setColor('#0984e3', '#ffffff')">
+                <div class="color-option" style="background-color: #0984e3;"></div>
+                <div class="theme-name">Sky Blue</div>
+            </div>
+        </div>
+
+        <!-- Gray colors -->
+        <div class="theme-category">
+            <h3>Grays</h3>
+            <div class="theme-option" onclick="setColor('#bdc3c7', '#fff')">
+                <div class="color-option" style="background-color: #bdc3c7;"></div>
+                <div class="theme-name">Light Gray</div>
+            </div>
+            <div class="theme-option" onclick="setColor('#7f8c8d', '#ffffff')">
+                <div class="color-option" style="background-color: #7f8c8d;"></div>
+                <div class="theme-name">Gray</div>
+            </div>
+            <div class="theme-option" onclick="setColor('#2c3e50', '#ffffff')">
+                <div class="color-option" style="background-color: #2c3e50;"></div>
+                <div class="theme-name">Dark Gray</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main editor and preview container -->
+    <div class="editor-container">
+        <textarea id="html-editor" oninput="updatePreview()">
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sample HTML</title>
+</head>
+<body>
+    <h1>Hello, World!</h1>
+    <p>This is a sample HTML content.</p>
+    </body>
+</html>
+        </textarea>
+        <iframe id="preview"></iframe>
+    </div>
+
+    <script>
+        // Function to toggle the color menu
+        function toggleColorMenu() {
+            const menu = document.getElementById('color-menu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function setCustomTheme() {
+            const url = document.getElementById('customThemeUrl').value;
+            document.body.style.backgroundImage = `url(${url})`;
+            document.body.style.backgroundSize = 'cover';
+            setEditorBackground('transparent'); // Set editor to transparent when a custom background is applied
+        }
+
+        function setColor(backgroundColor, textColor, isDefaultLight = false) {
+            document.body.style.backgroundColor = backgroundColor;
+            document.body.style.color = textColor;
+            const textarea = document.getElementById('html-editor');
+            textarea.style.color = isDefaultLight ? '#000000' : textColor; // Set editor text color based on the theme
+            textarea.style.backgroundColor = isDefaultLight ? 'rgba(255, 255, 255, 0.8)' : 'rgba(45, 45, 45, 0.8)'; // Set editor background color based on the theme
+            updatePreview();
+            toggleColorMenu(); // Hide the color menu after selection
+        }
+
+        function setEditorBackground(option) {
+            const textarea = document.getElementById('html-editor');
+            textarea.style.backgroundColor = 'rgba(45, 45, 45, 0.5)'; // Semi-transparent editor
+        }
+
+        function updatePreview() {
+            const htmlContent = document.getElementById('html-editor').value;
+            const iframe = document.getElementById('preview');
+            iframe.contentDocument.open();
+            iframe.contentDocument.write(htmlContent);
+            iframe.contentDocument.close();
+        }
+
+        // Initial load
+        window.onload = updatePreview;
+    </script>
+</body>
+</html>
